@@ -1,0 +1,25 @@
+Settings:
+  alias: "mtp"
+  start-coin: 10
+  coin: "MTP"
+  log: true
+
+Account-Protection:
+  enabled: true
+  minimum: 15
+
+Messages:
+  coin-you-have: "&aYou have &f%coin% &acoins"
+  transfer-success: "&aYou have successfully transfered &f%coins% &ato &f%target%"
+  transfer-failed: "&cTransfer failed because you don't have enough coins&f. &cIn order to do that you need &f%coin% &cmore coins."
+  account-error: "&6Your account isn't available to transfer coins. U need &f%coin% &6coins to access transfer system."
+  player-not-found: "&cThere's no player with name &f%name%"
+
+Database:
+  type: 'mysql' #mysql, sqlite
+  database-name: 'coins'
+  auth:
+    ip: 'localhost'
+    port: 3306
+    username: 'root'
+    password: ''
