@@ -14,6 +14,9 @@ import org.bukkit.Bukkit;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class CoinUserHandler {
@@ -37,7 +40,13 @@ public class CoinUserHandler {
         databaseProvider = createDatabaseProvider();
         databaseProvider.create();
         log = CoinConfiguration.CONFIG.getBoolean("Settings.log");
-
+        if (log) {
+            try {
+                Files.createDirectories(Paths.get("plugins/rCoins/log"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         //TASKS
         HCore.asyncScheduler()
@@ -54,7 +63,7 @@ public class CoinUserHandler {
 
         //BUKKIT
         HListenerAdapter.register(new PlayerConnectionListeners(plugin));
-        HCore.registerCommands(new CoinCommand("rcoin", "coin", "rcoins", "coins", CoinConfiguration.CONFIG.getString("Settings.alias")));
+        HCore.registerCommands(new CoinCommand("rcoin", CoinConfiguration.CONFIG.getStringList("Settings.commands")));
     }
 
     public static void uninitialize() {
@@ -81,7 +90,7 @@ public class CoinUserHandler {
                 case "sqlite":
                     return new CoinSQLiteProvider(rCoins.getInstance().getDataFolder() + "/data/coins.db");
                 default:
-                    throw new RuntimeException("we don't have support for this database " + type);
+                    throw new RuntimeException(type + " is not a valid database. Please use MySQL or SQLite");
             }
 
 
@@ -145,7 +154,10 @@ public class CoinUserHandler {
         target.changeCoin(target.getCoin() + value);
 
         if (log) {
-            String line = sender.getName() + " successfully sent " + value + " coins to " + target.getName();
+            SimpleDateFormat formatter = new SimpleDateFormat("HH:mm dd.MM.yyyy");
+            String date = formatter.format(new Date());
+
+            String line = "[" + date + "]" + sender.getName() + " successfully sent " + value + " coins to " + target.getName();
             try (FileWriter logWriter = new FileWriter("plugins/rCoins/log/log.txt", true);
                  BufferedWriter bufferedLogWriter = new BufferedWriter(logWriter)) {
                 bufferedLogWriter.write(line);

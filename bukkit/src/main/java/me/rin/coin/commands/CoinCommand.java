@@ -11,13 +11,21 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 public class CoinCommand extends HCommandExecutor {
 
     public CoinCommand(String command, String... aliases) {
         super(command, null, aliases);
-        super.subCommand("reload");
+        super.subCommand("admin").subCommand("reload");
         super.subCommand("transfer");
+        super.subCommand("admin").subCommand("set");
+        super.subCommand("admin").subCommand("add");
+        super.subCommand("admin").subCommand("remove");
+    }
+
+    public CoinCommand(String command, List<String> aliases) {
+        this(command, aliases.toArray(new String[0]));
     }
 
     @Override
@@ -33,6 +41,7 @@ public class CoinCommand extends HCommandExecutor {
             } else if (args.length == 1) {
                 if (args[0].equals("admin")) {
                     if (sender.isOp()) {
+                        player.sendMessage(CoinUtils.colored("&a/coin <player> &8-> &f shows player's coins"));
                         player.sendMessage(CoinUtils.colored("&a/coin admin set <player> <value> &8-> &f sets player's coin to value"));
                         player.sendMessage(CoinUtils.colored("&a/coin admin add <player> <value> &8-> &f adds value to player's coins"));
                         player.sendMessage(CoinUtils.colored("&a/coin admin remove <player> <value> &8-> &f removes value from player's coins"));
@@ -49,7 +58,7 @@ public class CoinCommand extends HCommandExecutor {
                     if (player.isOp()) {
                         if (Bukkit.getPlayer(args[0]) != null) {
                             CoinUser target = CoinUserHandler.getOrLoad(Bukkit.getPlayer(args[0]).getUniqueId());
-                            player.sendMessage("&aPlayer &f" + args[0] + " &ahas &f" + target.getCoin() + " &acoins.");
+                            player.sendMessage(CoinUtils.colored("&aPlayer &f" + args[0] + " &ahas &f" + target.getCoin() + " &acoins."));
                         } else {
                             player.sendMessage(CoinUtils.colored(CoinConfiguration.CONFIG.getString("Messages.player-not-found")).replace("%name%", args[0]));
                         }
@@ -71,7 +80,7 @@ public class CoinCommand extends HCommandExecutor {
                     if (!args[1].equals(player.getName()) && Bukkit.getPlayer(args[1]) != null) {
                         if (CoinConfiguration.CONFIG.getBoolean("Account-Protection.enabled")) {
                             if (user.getCoin() < CoinConfiguration.CONFIG.getInt("Account-Protection.minimum")) {
-                                player.sendMessage(CoinUtils.colored(CoinConfiguration.CONFIG.getString("Messages.account-error").replace("%coin%", String.valueOf(CoinConfiguration.CONFIG.getInt("acc-min")))));
+                                player.sendMessage(CoinUtils.colored(CoinConfiguration.CONFIG.getString("Messages.account-error").replace("%coin%", String.valueOf(CoinConfiguration.CONFIG.getInt("Account-Protection.minimum")))));
                                 return;
                             }
                         }
@@ -108,8 +117,9 @@ public class CoinCommand extends HCommandExecutor {
                                 return;
                             }
                             CoinUser target = CoinUserHandler.getOrLoad(Bukkit.getPlayer(args[2]).getUniqueId());
-                            target.changeCoin(target.getCoin() + Integer.parseInt(args[3]));
-                            player.sendMessage(CoinUtils.colored("&aYou successfully added &f" + args[3] + "&a coins to &f" + args[3]));
+                            int value = Integer.parseInt(args[3]);
+                            target.changeCoin(target.getCoin() + value);
+                            player.sendMessage(CoinUtils.colored("&aYou successfully added &f" + value + "&a coins to &f" + target.getName()));
                             return;
                         } else if (args[1].equals("remove")) {
                             if (Bukkit.getPlayer(args[2]) == null) {
@@ -117,8 +127,14 @@ public class CoinCommand extends HCommandExecutor {
                                 return;
                             }
                             CoinUser target = CoinUserHandler.getOrLoad(Bukkit.getPlayer(args[2]).getUniqueId());
-                            target.changeCoin(target.getCoin() - Integer.parseInt(args[3]));
-                            player.sendMessage(CoinUtils.colored("&aYou successfully removed &f" + args[3] + "&a coins from &f" + args[3]));
+                            int value = Integer.parseInt(args[3]);
+                            if (value > target.getCoin()) {
+                                target.changeCoin(0);
+                            } else {
+                                target.changeCoin(target.getCoin() - value);
+                            }
+
+                            player.sendMessage(CoinUtils.colored("&aYou successfully removed &f" + value + "&a coins from &f" + target.getName() + ". &aNow &f" + target.getName() + " &a has only &f " + target.getCoin() + " &acoins."));
                             return;
                         }
                     }

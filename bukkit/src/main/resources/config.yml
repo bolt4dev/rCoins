@@ -1,7 +1,10 @@
 Settings:
-  alias: "mtp"
+  commands:
+    - "coin"
+    - "rcoins"
+    - "coins"
   start-coin: 10
-  coin: "MTP"
+  coin: "COIN"
   log: true
 
 Account-Protection:
@@ -10,7 +13,7 @@ Account-Protection:
 
 Messages:
   coin-you-have: "&aYou have &f%coin% &acoins"
-  transfer-success: "&aYou have successfully transfered &f%coins% &ato &f%target%"
+  transfer-success: "&aYou have successfully sent &f%coins% &ato &f%target%"
   transfer-failed: "&cTransfer failed because you don't have enough coins&f. &cIn order to do that you need &f%coin% &cmore coins."
   account-error: "&6Your account isn't available to transfer coins. U need &f%coin% &6coins to access transfer system."
   player-not-found: "&cThere's no player with name &f%name%"
