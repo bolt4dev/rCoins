@@ -17,7 +17,7 @@ If you need to use API of rCoins, you can use maven or gradle from jitpack.
 <dependency>
     <groupId>com.github.rin-17.rCoins</groupId>
     <artifactId>bukkit</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 </dependency>
 ```
 
@@ -28,6 +28,6 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.rin-17.rCoins:bukkit:0.0.1'
+    implementation 'com.github.rin-17.rCoins:bukkit:0.0.2'
 }
 ```
