@@ -33,7 +33,5 @@ public class PlayerConnectionListeners extends HListenerAdapter {
         UUID uid = event.getPlayer().getUniqueId();
         CoinUserHandler.findByUID(uid)
                 .ifPresent(coinUser -> coinUser.getDatabase().updateAsync());
-
-        Bukkit.broadcastMessage(Bukkit.getOnlinePlayers().toString());
     }
 }
