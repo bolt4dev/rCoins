@@ -1,14 +1,14 @@
 package me.rin.coin.database.providers.mysql;
 
 import com.hakan.core.database.DatabaseProvider;
+import com.hakan.core.utils.query.create.CreateQuery;
+import com.hakan.core.utils.query.delete.DeleteQuery;
+import com.hakan.core.utils.query.insert.InsertQuery;
+import com.hakan.core.utils.query.select.SelectQuery;
+import com.hakan.core.utils.query.update.UpdateQuery;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import me.rin.coin.CoinUser;
-import me.rin.coin.util.query.create.CreateQuery;
-import me.rin.coin.util.query.delete.DeleteQuery;
-import me.rin.coin.util.query.insert.InsertQuery;
-import me.rin.coin.util.query.select.SelectQuery;
-import me.rin.coin.util.query.update.UpdateQuery;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -59,7 +59,7 @@ public class CoinMySQLProvider implements DatabaseProvider<CoinUser> {
             List<CoinUser> coinDatas = new ArrayList<>();
 
             SelectQuery query = new SelectQuery("coins").fromAll();
-            ResultSet resultSet = statement.executeQuery(query.toString());
+            ResultSet resultSet = statement.executeQuery(query.build());
             while (resultSet.next())
                 coinDatas.add(new CoinUser(resultSet));
 
@@ -76,7 +76,7 @@ public class CoinMySQLProvider implements DatabaseProvider<CoinUser> {
             statement.execute("USE " + this.databaseName);
 
             SelectQuery query = new SelectQuery("coins").where(s, o).fromAll();
-            ResultSet resultSet = statement.executeQuery(query.toString());
+            ResultSet resultSet = statement.executeQuery(query.build());
             resultSet.next();
             return new CoinUser(resultSet);
         } catch (SQLException e) {
@@ -152,7 +152,7 @@ public class CoinMySQLProvider implements DatabaseProvider<CoinUser> {
         InsertQuery query = new InsertQuery("coins");
         Arrays.asList(CoinMySQLField.values())
                 .forEach(field -> query.value(field.getPath(), field.getValue(coinUser)));
-        return query.toString();
+        return query.build();
     }
 
     private String toUpdateSQL(CoinUser coinUser) {
@@ -160,12 +160,12 @@ public class CoinMySQLProvider implements DatabaseProvider<CoinUser> {
         query.where(CoinMySQLField.OWNER.getPath(), CoinMySQLField.OWNER.getValue(coinUser));
         Arrays.asList(CoinMySQLField.values())
                 .forEach(field -> query.value(field.getPath(), field.getValue(coinUser)));
-        return query.toString();
+        return query.build();
     }
 
     private String toDeleteSQL(CoinUser coinUser) {
         DeleteQuery query = new DeleteQuery("coins");
         query.where(CoinMySQLField.OWNER.getPath(), CoinMySQLField.OWNER.getValue(coinUser));
-        return query.toString();
+        return query.build();
     }
 }

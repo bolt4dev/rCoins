@@ -2,12 +2,12 @@ package me.rin.coin.database.providers.sqlite;
 
 import com.hakan.core.database.DatabaseProvider;
 import com.hakan.core.utils.HYaml;
+import com.hakan.core.utils.query.create.CreateQuery;
+import com.hakan.core.utils.query.delete.DeleteQuery;
+import com.hakan.core.utils.query.insert.InsertQuery;
+import com.hakan.core.utils.query.select.SelectQuery;
+import com.hakan.core.utils.query.update.UpdateQuery;
 import me.rin.coin.CoinUser;
-import me.rin.coin.util.query.create.CreateQuery;
-import me.rin.coin.util.query.delete.DeleteQuery;
-import me.rin.coin.util.query.insert.InsertQuery;
-import me.rin.coin.util.query.select.SelectQuery;
-import me.rin.coin.util.query.update.UpdateQuery;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -43,7 +43,7 @@ public class CoinSQLiteProvider implements DatabaseProvider<CoinUser> {
 
             SelectQuery query = new SelectQuery("coins").fromAll();
 
-            ResultSet resultSet = statement.executeQuery(query.toString());
+            ResultSet resultSet = statement.executeQuery(query.build());
             while (resultSet.next())
                 coinDatas.add(new CoinUser(resultSet));
 
@@ -59,7 +59,7 @@ public class CoinSQLiteProvider implements DatabaseProvider<CoinUser> {
         try (Statement statement = this.connection.createStatement()) {
             SelectQuery query = new SelectQuery("coins").where(s, o).fromAll();
 
-            ResultSet resultSet = statement.executeQuery(query.toString());
+            ResultSet resultSet = statement.executeQuery(query.build());
             resultSet.next();
             return new CoinUser(resultSet);
         } catch (SQLException e) {
@@ -129,7 +129,7 @@ public class CoinSQLiteProvider implements DatabaseProvider<CoinUser> {
         InsertQuery query = new InsertQuery("coins");
         Arrays.asList(CoinSQLiteField.values())
                 .forEach(field -> query.value(field.getPath(), field.getValue(coinUser)));
-        return query.toString();
+        return query.build();
     }
 
     private String toUpdateSQL(CoinUser coinUser) {
@@ -137,12 +137,12 @@ public class CoinSQLiteProvider implements DatabaseProvider<CoinUser> {
         query.where(CoinSQLiteField.OWNER.getPath(), CoinSQLiteField.OWNER.getValue(coinUser));
         Arrays.asList(CoinSQLiteField.values())
                 .forEach(field -> query.value(field.getPath(), field.getValue(coinUser)));
-        return query.toString();
+        return query.build();
     }
 
     private String toDeleteSQL(CoinUser coinUser) {
         DeleteQuery query = new DeleteQuery("coins");
         query.where(CoinSQLiteField.OWNER.getPath(), CoinSQLiteField.OWNER.getValue(coinUser));
-        return query.toString();
+        return query.build();
     }
 }
