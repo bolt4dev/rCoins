@@ -29,7 +29,7 @@
         <dependency>
             <groupId>com.github.hakan-krgn.hCore</groupId>
             <artifactId>bukkit-primary</artifactId>
-            <version>0.1.5</version>
+            <version>0.1.8</version>
             <scope>compile</scope>
         </dependency>
 
