@@ -17,6 +17,12 @@ Messages:
   transfer-failed: "&cTransfer failed because you don't have enough coins&f. &cIn order to do that you need &f%coin% &cmore coins."
   account-error: "&6Your account isn't available to transfer coins. U need &f%coin% &6coins to access transfer system."
   player-not-found: "&cThere's no player with name &f%name%"
+  help:
+    - "&c there's no such a command"
+    - "&f----------------------------"
+    - "&a/coin &8-> &f shows your coins"
+    - "&a/coin transfer <player> <value> &8-> &f sends value of coins to another player"
+    - "&a/coin admin &8-> &f shows admin commands"
 
 Database:
   type: 'mysql' #mysql, sqlite

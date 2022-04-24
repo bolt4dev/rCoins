@@ -7,9 +7,11 @@ import me.rin.coin.CoinUserHandler;
 import me.rin.coin.configuration.CoinConfiguration;
 import me.rin.coin.util.CoinUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -142,6 +144,12 @@ public class CoinCommand extends HCommandExecutor {
                 }
             }
         }
+
+
+
+        CoinConfiguration.CONFIG.getStringList("Messages.help")
+                .forEach(key -> sender.sendMessage(CoinUtils.colored(key)));
+
 
         sender.sendMessage(CoinUtils.colored("&c there's no such a command"));
         sender.sendMessage(CoinUtils.colored("&f----------------------------"));
