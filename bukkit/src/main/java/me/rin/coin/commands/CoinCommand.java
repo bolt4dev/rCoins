@@ -150,11 +150,5 @@ public class CoinCommand extends HCommandExecutor {
         CoinConfiguration.CONFIG.getStringList("Messages.help")
                 .forEach(key -> sender.sendMessage(CoinUtils.colored(key)));
 
-
-        sender.sendMessage(CoinUtils.colored("&c there's no such a command"));
-        sender.sendMessage(CoinUtils.colored("&f----------------------------"));
-        sender.sendMessage(CoinUtils.colored("&a/coin &8-> &f shows your coins"));
-        sender.sendMessage(CoinUtils.colored("&a/coin transfer <player> <value> &8-> &f sends value of coins to another player"));
-        sender.sendMessage(CoinUtils.colored("&a/coin admin &8-> &f shows admin commands"));
     }
 }
