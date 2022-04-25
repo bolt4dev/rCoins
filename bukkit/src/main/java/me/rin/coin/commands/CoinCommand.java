@@ -46,9 +46,8 @@ public class CoinCommand extends HCommandExecutor {
             return;
         } else if (args.length == 1) {
             if (args[0].equals("help")) {
-                sender.sendMessage(CoinUtils.colored("&a/coin &8-> &f shows your coins"));
-                sender.sendMessage(CoinUtils.colored("&a/coin transfer <player> <value> &8-> &f sends value of coins to another player"));
-                sender.sendMessage(CoinUtils.colored("&a/coin admin &8-> &f shows admin commands"));
+                CoinConfiguration.CONFIG.getStringList("Messages.help")
+                        .forEach(key -> sender.sendMessage(CoinUtils.colored(key)));
                 return;
             } else if (sender.isOp() || sender instanceof ConsoleCommandSender) {
                 if (args[0].equals("admin")) {
@@ -146,7 +145,7 @@ public class CoinCommand extends HCommandExecutor {
         }
 
 
-
+            sender.sendMessage(CoinUtils.colored("Messages.unknown-command"));
         CoinConfiguration.CONFIG.getStringList("Messages.help")
                 .forEach(key -> sender.sendMessage(CoinUtils.colored(key)));
 
