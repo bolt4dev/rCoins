@@ -1,13 +1,9 @@
 package me.rin.coin;
 
 import com.hakan.core.HCore;
-import com.hakan.core.database.DatabaseProvider;
-import com.hakan.core.listener.HListenerAdapter;
 import me.rin.coin.commands.CoinCommand;
 import me.rin.coin.configuration.CoinConfiguration;
-import me.rin.coin.database.providers.mysql.CoinMySQLProvider;
-import me.rin.coin.database.providers.sqlite.CoinSQLiteProvider;
-import me.rin.coin.database.updater.CoinDatabaseUpdater;
+import me.rin.coin.database.CoinDatabase;
 import me.rin.coin.listeners.PlayerConnectionListeners;
 import org.bukkit.Bukkit;
 
@@ -17,12 +13,17 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 public class CoinUserHandler {
 
     private static Map<UUID, CoinUser> coinUsers;
-    private static DatabaseProvider<CoinUser> databaseProvider;
     private static boolean log;
 
 
@@ -36,9 +37,11 @@ public class CoinUserHandler {
 
 
         //DATABASE
+        CoinDatabase.initialize();
+
+
+        //CACHE
         coinUsers = new HashMap<>();
-        databaseProvider = createDatabaseProvider();
-        databaseProvider.create();
         log = CoinConfiguration.CONFIG.getBoolean("Settings.log");
         if (log) {
             try {
@@ -48,11 +51,8 @@ public class CoinUserHandler {
             }
         }
 
-        //TASKS
-        HCore.asyncScheduler()
-                .after(12000).every(12000)
-                .run(CoinDatabaseUpdater::updateAll);
 
+        //TASK
         HCore.syncScheduler()
                 .after(6000).every(6000)
                 .run(() -> coinUsers.values().forEach(coinUser -> {
@@ -62,46 +62,14 @@ public class CoinUserHandler {
 
 
         //BUKKIT
-        HListenerAdapter.register(new PlayerConnectionListeners(plugin));
-        HCore.registerCommands(new CoinCommand("rcoin", CoinConfiguration.CONFIG.getStringList("Settings.commands")));
+        HCore.registerListeners(new PlayerConnectionListeners());
+        HCore.registerCommands(new CoinCommand());
     }
 
     public static void uninitialize() {
-        CoinDatabaseUpdater.updateAll();
+        CoinDatabase.getProvider().getUpdater().updateAll();
     }
 
-
-    /*
-    PROVIDERS
-     */
-    public static DatabaseProvider<CoinUser> createDatabaseProvider() {
-        try {
-            String type = CoinConfiguration.CONFIG.getString("Database.type");
-            String databaseName = CoinConfiguration.CONFIG.getString("Database.database-name");
-
-            String ip = CoinConfiguration.CONFIG.getString("Database.auth.ip");
-            int port = CoinConfiguration.CONFIG.getInt("Database.auth.port");
-            String username = CoinConfiguration.CONFIG.getString("Database.auth.username");
-            String password = CoinConfiguration.CONFIG.getString("Database.auth.password");
-
-            switch (type) {
-                case "mysql":
-                    return new CoinMySQLProvider(ip, port, username, password, databaseName);
-                case "sqlite":
-                    return new CoinSQLiteProvider(rCoins.getInstance().getDataFolder() + "/data/coins.db");
-                default:
-                    throw new RuntimeException(type + " is not a valid database. Please use MySQL or SQLite");
-            }
-
-
-        } catch (Exception e) {
-            throw new NullPointerException(e.getMessage());
-        }
-    }
-
-    public static DatabaseProvider<CoinUser> getDatabaseProvider() {
-        return CoinUserHandler.databaseProvider;
-    }
 
     /*
     HANDLERS
@@ -135,7 +103,7 @@ public class CoinUserHandler {
         if (coinUser != null)
             return coinUser;
 
-        CoinUser coinUserDB = databaseProvider.getValue("uid", uuid);
+        CoinUser coinUserDB = CoinDatabase.getProvider().getValue("uid", uuid);
 
         if (coinUserDB != null) {
             coinUsers.put(coinUserDB.getUID(), coinUserDB);

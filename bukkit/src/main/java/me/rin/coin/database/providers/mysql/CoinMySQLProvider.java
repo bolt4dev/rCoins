@@ -16,9 +16,13 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
-public class CoinMySQLProvider implements DatabaseProvider<CoinUser> {
+public class CoinMySQLProvider extends DatabaseProvider<CoinUser> {
 
     private final Connection connection;
     private final String databaseName;

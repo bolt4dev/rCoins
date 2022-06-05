@@ -1,6 +1,6 @@
 package me.rin.coin.configuration;
 
-import com.hakan.core.utils.HYaml;
+import com.hakan.core.utils.yaml.HYaml;
 import me.rin.coin.rCoins;
 
 public class CoinConfiguration {

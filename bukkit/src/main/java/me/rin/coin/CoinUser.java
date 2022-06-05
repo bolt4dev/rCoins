@@ -1,10 +1,8 @@
 package me.rin.coin;
 
-
 import com.hakan.core.database.DatabaseObject;
 import me.rin.coin.configuration.CoinConfiguration;
 import me.rin.coin.database.CoinDatabase;
-import me.rin.coin.database.updater.CoinDatabaseUpdater;
 import org.bukkit.entity.Player;
 
 import java.sql.ResultSet;
@@ -58,11 +56,11 @@ public class CoinUser implements DatabaseObject {
      */
     public void changeName(String name) {
         this.name = name;
-        CoinDatabaseUpdater.addToUpdate(this);
+        CoinDatabase.getProvider().addUpdateObject(this);
     }
 
     public void changeCoin(Integer coin) {
         this.coin = coin;
-        CoinDatabaseUpdater.addToUpdate(this);
+        CoinDatabase.getProvider().addUpdateObject(this);
     }
 }
