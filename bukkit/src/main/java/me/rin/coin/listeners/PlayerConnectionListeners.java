@@ -1,22 +1,16 @@
 package me.rin.coin.listeners;
 
-import com.hakan.core.listener.HListenerAdapter;
 import me.rin.coin.CoinUser;
 import me.rin.coin.CoinUserHandler;
-import me.rin.coin.rCoins;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.UUID;
 
-public class PlayerConnectionListeners extends HListenerAdapter {
-    
-    public PlayerConnectionListeners(rCoins plugin) {
-        super(plugin);
-    }
+public class PlayerConnectionListeners implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {

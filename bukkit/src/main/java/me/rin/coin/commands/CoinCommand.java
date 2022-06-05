@@ -1,153 +1,146 @@
 package me.rin.coin.commands;
 
 
-import com.hakan.core.command.HCommandExecutor;
+import com.hakan.core.command.HCommandAdapter;
+import com.hakan.core.command.executors.base.BaseCommand;
+import com.hakan.core.command.executors.sub.SubCommand;
+import com.hakan.core.utils.ColorUtil;
 import me.rin.coin.CoinUser;
 import me.rin.coin.CoinUserHandler;
 import me.rin.coin.configuration.CoinConfiguration;
-import me.rin.coin.util.CoinUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
-import javax.annotation.Nonnull;
-import java.util.List;
+@BaseCommand(
+        name = "rcoin",
+        description = "Coin command",
+        usage = "coin <command>",
+        aliases = {"coin", "rcoins"}
+)
+public class CoinCommand implements HCommandAdapter {
 
-public class CoinCommand extends HCommandExecutor {
-
-    public CoinCommand(String command, String... aliases) {
-        super(command, null, aliases);
-        super.subCommand("admin").subCommand("reload");
-        super.subCommand("transfer");
-        super.subCommand("admin").subCommand("set");
-        super.subCommand("admin").subCommand("add");
-        super.subCommand("admin").subCommand("remove");
-    }
-
-    public CoinCommand(String command, List<String> aliases) {
-        this(command, aliases.toArray(new String[0]));
-    }
-
-    @Override
-    public void onCommand(@Nonnull CommandSender sender, @Nonnull String[] args) {
-
-
+    @SubCommand
+    public void execute(Player player, String[] args) {
         if (args.length == 0) {
-            if (!(sender instanceof Player))
-                return;
-
-            Player player = (Player) sender;
             CoinUser user = CoinUserHandler.getOrLoad(player.getUniqueId());
-
-            player.sendMessage(CoinUtils.colored(CoinConfiguration.CONFIG.getString("Messages.coin-you-have").replace("%coin%", user.getCoin().toString())));
-            return;
+            player.sendMessage(ColorUtil.colored(CoinConfiguration.CONFIG.getString("Messages.coin-you-have")
+                    .replace("%coin%", user.getCoin().toString())));
         } else if (args.length == 1) {
-            if (args[0].equals("help")) {
-                CoinConfiguration.CONFIG.getStringList("Messages.help")
-                        .forEach(key -> sender.sendMessage(CoinUtils.colored(key)));
-                return;
-            } else if (sender.isOp() || sender instanceof ConsoleCommandSender) {
-                if (args[0].equals("admin")) {
-                    sender.sendMessage(CoinUtils.colored("&a/coin <player> &8-> &f shows player's coins"));
-                    sender.sendMessage(CoinUtils.colored("&a/coin admin set <player> <value> &8-> &f sets player's coin to value"));
-                    sender.sendMessage(CoinUtils.colored("&a/coin admin add <player> <value> &8-> &f adds value to player's coins"));
-                    sender.sendMessage(CoinUtils.colored("&a/coin admin remove <player> <value> &8-> &f removes value from player's coins"));
-                    sender.sendMessage(CoinUtils.colored("&a/coin admin reload &8-> &f reloads the config file"));
-                } else {
-                    if (Bukkit.getPlayer(args[0]) != null) {
-                        CoinUser target = CoinUserHandler.getOrLoad(Bukkit.getPlayer(args[0]).getUniqueId());
-                        sender.sendMessage(CoinUtils.colored("&aPlayer &f" + args[0] + " &ahas &f" + target.getCoin() + " &acoins."));
-                    } else {
-                        sender.sendMessage(CoinUtils.colored(CoinConfiguration.CONFIG.getString("Messages.player-not-found")).replace("%name%", args[0]));
-                    }
-                }
-                return;
-            }
-        } else if (args.length == 2) {
-            if (args[1].equals("reload")) {
-                if (sender.isOp() || sender instanceof ConsoleCommandSender) {
-                    CoinConfiguration.CONFIG.reload();
-                    sender.sendMessage(CoinUtils.colored("&aCoin system reloaded"));
-                } else {
-                    sender.sendMessage(CoinUtils.colored(CoinConfiguration.CONFIG.getString("Messages.insufficient-permission")));
-                }
-                return;
-            }
-        } else if (args.length == 3) {
-            if (args[0].equals("transfer")) {
-                if (!(sender instanceof Player))
-                    return;
-
-                Player player = (Player) sender;
-                CoinUser user = CoinUserHandler.getOrLoad(player.getUniqueId());
-
-                if (!args[1].equals(player.getName()) && Bukkit.getPlayer(args[1]) != null) {
-                    if (CoinConfiguration.CONFIG.getBoolean("Account-Protection.enabled")) {
-                        if (user.getCoin() < CoinConfiguration.CONFIG.getInt("Account-Protection.minimum")) {
-                            player.sendMessage(CoinUtils.colored(CoinConfiguration.CONFIG.getString("Messages.account-error").replace("%coin%", String.valueOf(CoinConfiguration.CONFIG.getInt("Account-Protection.minimum")))));
-                            return;
-                        }
-                    }
-
-                    int coinToSend = Integer.parseInt(args[2]);
-                    if (user.getCoin() >= coinToSend) {
-                        CoinUser target = CoinUserHandler.getOrLoad(Bukkit.getPlayer(args[1]).getUniqueId());
-
-                        CoinUserHandler.transferCoin(user, target, coinToSend);
-                        player.sendMessage(CoinUtils.colored(CoinConfiguration.CONFIG.getString("Messages.transfer-success").replace("%coins%", args[2]).replace("%target%", args[1])));
-                    } else {
-                        player.sendMessage(CoinUtils.colored(CoinConfiguration.CONFIG.getString("Messages.transfer-failed").replace("%coin%", String.valueOf(Integer.parseInt(args[2]) - user.getCoin()))));
-                    }
-                } else {
-                    player.sendMessage(CoinUtils.colored(CoinConfiguration.CONFIG.getString("Messages.player-not-found")).replace("%name%", args[1]));
-                }
-                return;
-            }
-        } else if (args.length == 4) {
-            if (args[0].equals("admin")) {
-                if (!sender.isOp() && !(sender instanceof ConsoleCommandSender))
-                    return;
-
-                Player target = Bukkit.getPlayer(args[2]);
-                if (target == null) {
-                    sender.sendMessage(CoinUtils.colored(CoinConfiguration.CONFIG.getString("Messages.player-not-found")).replace("%name%", args[2]));
-                    return;
-                }
-
-                if (args[1].equals("set")) {
-                    CoinUser targetUser = CoinUserHandler.getOrLoad(Bukkit.getPlayer(args[2]).getUniqueId());
-                    targetUser.changeCoin(Integer.valueOf(args[3]));
-                    sender.sendMessage(CoinUtils.colored("&aYou successfully set &f" + args[2] + "&f's&a coin value to &f" + args[3]));
-                    return;
-                } else if (args[1].equals("add")) {
-                    CoinUser targetUser = CoinUserHandler.getOrLoad(Bukkit.getPlayer(args[2]).getUniqueId());
-                    int value = Integer.parseInt(args[3]);
-                    targetUser.changeCoin(targetUser.getCoin() + value);
-                    sender.sendMessage(CoinUtils.colored("&aYou successfully added &f" + value + "&a coins to &f" + targetUser.getName()));
-                    return;
-                } else if (args[1].equals("remove")) {
-                    CoinUser targetUser = CoinUserHandler.getOrLoad(Bukkit.getPlayer(args[2]).getUniqueId());
-                    int value = Integer.parseInt(args[3]);
-
-                    if (value > targetUser.getCoin()) {
-                        targetUser.changeCoin(0);
-                    } else {
-                        targetUser.changeCoin(targetUser.getCoin() - value);
-                    }
-
-                    sender.sendMessage(CoinUtils.colored("&aYou successfully removed &f" + value + "&a coins from &f" + targetUser.getName() + ". &aNow &f" + targetUser.getName() + " &a has only &f " + targetUser.getCoin() + " &acoins."));
-                    return;
-                }
+            Player targetPlayer = Bukkit.getPlayer(args[0]);
+            if (targetPlayer != null) {
+                CoinUser target = CoinUserHandler.getOrLoad(targetPlayer.getUniqueId());
+                player.sendMessage(ColorUtil.colored("&aPlayer &f" + args[0] + " &ahas &f" + target.getCoin() + " &acoins."));
+            } else {
+                player.sendMessage(ColorUtil.colored(CoinConfiguration.CONFIG.getString("Messages.player-not-found")).replace("%name%", args[0]));
             }
         }
+    }
+
+    @SubCommand(
+            args = "help"
+    )
+    public void help(CommandSender sender, String[] args) {
+        if (sender.isOp() || sender instanceof ConsoleCommandSender) {
+            sender.sendMessage(ColorUtil.colored("&a/coin <player> &8-> &f shows player's coins"));
+            sender.sendMessage(ColorUtil.colored("&a/coin admin set <player> <value> &8-> &f sets player's coin to value"));
+            sender.sendMessage(ColorUtil.colored("&a/coin admin add <player> <value> &8-> &f adds value to player's coins"));
+            sender.sendMessage(ColorUtil.colored("&a/coin admin remove <player> <value> &8-> &f removes value from player's coins"));
+            sender.sendMessage(ColorUtil.colored("&a/coin admin reload &8-> &f reloads the config file"));
+        } else {
+            CoinConfiguration.CONFIG.getStringList("Messages.help")
+                    .forEach(key -> sender.sendMessage(ColorUtil.colored(key)));
+        }
+    }
+
+    @SubCommand(
+            args = "transfer"
+    )
+    public void transfer(Player player, String[] args) {
+        if (args.length == 3) {
+            CoinUser user = CoinUserHandler.getOrLoad(player.getUniqueId());
+
+            if (!args[1].equals(player.getName()) && Bukkit.getPlayer(args[1]) != null) {
+                if (CoinConfiguration.CONFIG.getBoolean("Account-Protection.enabled")) {
+                    if (user.getCoin() < CoinConfiguration.CONFIG.getInt("Account-Protection.minimum")) {
+                        player.sendMessage(ColorUtil.colored(CoinConfiguration.CONFIG.getString("Messages.account-error").replace("%coin%", String.valueOf(CoinConfiguration.CONFIG.getInt("Account-Protection.minimum")))));
+                        return;
+                    }
+                }
+
+                int coinToSend = Integer.parseInt(args[2]);
+                if (user.getCoin() >= coinToSend) {
+                    CoinUser target = CoinUserHandler.getOrLoad(Bukkit.getPlayer(args[1]).getUniqueId());
+
+                    CoinUserHandler.transferCoin(user, target, coinToSend);
+                    player.sendMessage(ColorUtil.colored(CoinConfiguration.CONFIG.getString("Messages.transfer-success").replace("%coins%", args[2]).replace("%target%", args[1])));
+                } else {
+                    player.sendMessage(ColorUtil.colored(CoinConfiguration.CONFIG.getString("Messages.transfer-failed").replace("%coin%", String.valueOf(Integer.parseInt(args[2]) - user.getCoin()))));
+                }
+            } else {
+                player.sendMessage(ColorUtil.colored(CoinConfiguration.CONFIG.getString("Messages.player-not-found")).replace("%name%", args[1]));
+            }
+        } else {
+            player.sendMessage(ColorUtil.colored("&cUsage: /coin transfer <player> <value>"));
+        }
+    }
 
 
-            sender.sendMessage(CoinUtils.colored("Messages.unknown-command"));
-        CoinConfiguration.CONFIG.getStringList("Messages.help")
-                .forEach(key -> sender.sendMessage(CoinUtils.colored(key)));
+    @SubCommand(
+            args = {"admin", "reload"},
+            permission = "rcoins.admin",
+            permissionMessage = "§cYou don't have permission to use this command."
+    )
+    public void adminReload(CommandSender sender, String[] args) {
+        CoinConfiguration.CONFIG.reload();
+        sender.sendMessage(ColorUtil.colored("&aCoin system reloaded"));
+    }
 
+    @SubCommand(
+            args = {"admin", "set"},
+            permission = "rcoins.admin",
+            permissionMessage = "§cYou don't have permission to use this command."
+    )
+    public void adminSet(CommandSender sender, String[] args) {
+        if (args.length == 4) {
+            CoinUser targetUser = CoinUserHandler.getOrLoad(Bukkit.getPlayer(args[2]).getUniqueId());
+            targetUser.changeCoin(Integer.valueOf(args[3]));
+            sender.sendMessage(ColorUtil.colored("&aYou successfully set &f" + args[2] + "&f's&a coin value to &f" + args[3]));
+        } else {
+            sender.sendMessage(ColorUtil.colored("&cUsage: /coin admin set <player> <value>"));
+        }
+    }
+
+    @SubCommand(
+            args = {"admin", "add"},
+            permission = "rcoins.admin",
+            permissionMessage = "§cYou don't have permission to use this command."
+    )
+    public void adminAdd(CommandSender sender, String[] args) {
+        if (args.length == 4) {
+            CoinUser targetUser = CoinUserHandler.getOrLoad(Bukkit.getPlayer(args[2]).getUniqueId());
+            int value = Integer.parseInt(args[3]);
+            targetUser.changeCoin(targetUser.getCoin() + value);
+            sender.sendMessage(ColorUtil.colored("&aYou successfully added &f" + value + "&a coins to &f" + targetUser.getName()));
+        } else {
+            sender.sendMessage(ColorUtil.colored("&cUsage: /coin admin add <player> <value>"));
+        }
+    }
+
+    @SubCommand(
+            args = {"admin", "remove"},
+            permission = "rcoins.admin",
+            permissionMessage = "§cYou don't have permission to use this command."
+    )
+    public void adminRemove(CommandSender sender, String[] args) {
+        if (args.length == 4) {
+            CoinUser targetUser = CoinUserHandler.getOrLoad(Bukkit.getPlayer(args[2]).getUniqueId());
+            int value = Integer.parseInt(args[3]);
+            targetUser.changeCoin(Math.max(0, targetUser.getCoin() - value));
+            sender.sendMessage(ColorUtil.colored("&aYou successfully removed &f" + value + "&a coins from &f" + targetUser.getName() + ". &aNow &f" + targetUser.getName() + " &a has only &f " + targetUser.getCoin() + " &acoins."));
+        } else {
+            sender.sendMessage(ColorUtil.colored("&cUsage: /coin admin remove <player> <value>"));
+        }
     }
 }

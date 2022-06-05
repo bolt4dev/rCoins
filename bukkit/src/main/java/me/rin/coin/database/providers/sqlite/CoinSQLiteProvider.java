@@ -1,20 +1,28 @@
 package me.rin.coin.database.providers.sqlite;
 
 import com.hakan.core.database.DatabaseProvider;
-import com.hakan.core.utils.HYaml;
 import com.hakan.core.utils.query.create.CreateQuery;
 import com.hakan.core.utils.query.delete.DeleteQuery;
 import com.hakan.core.utils.query.insert.InsertQuery;
 import com.hakan.core.utils.query.select.SelectQuery;
 import com.hakan.core.utils.query.update.UpdateQuery;
+import com.hakan.core.utils.yaml.HYaml;
 import me.rin.coin.CoinUser;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
-public class CoinSQLiteProvider implements DatabaseProvider<CoinUser> {
+public class CoinSQLiteProvider extends DatabaseProvider<CoinUser> {
 
     private final Connection connection;
 
